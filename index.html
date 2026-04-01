@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SignBridge — Real-Time Sign Language Communication</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #070E1C;
+  --navy2: #0B1628;
+  --teal: #00D4B1;
+  --teal2: #00B89A;
+  --amber: #F5A623;
+  --violet: #7C6EF0;
+  --cream: #EDE8D8;
+  --muted: rgba(237,232,216,0.5);
+  --border: rgba(0,212,177,0.2);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--cream);
+  min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 15% 20%, rgba(0,212,177,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 80%, rgba(124,110,240,0.06) 0%, transparent 50%);
+}
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* NAV */
+nav {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(7,14,28,0.95);
+  backdrop-filter: blur(16px);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700;
+  color: var(--teal); letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 10px; text-decoration: none;
+}
+.nav-logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), #008F78);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; box-shadow: 0 0 14px rgba(0,212,177,0.35);
+}
+.nav-links { display: flex; gap: 6px; }
+.nav-link {
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+  color: var(--muted); text-decoration: none; transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { color: var(--cream); border-color: var(--border); }
+.nav-link.cta {
+  background: var(--teal); color: #070E1C; border-color: var(--teal);
+  font-weight: 700;
+}
+.nav-link.cta:hover { background: var(--teal2); }
+
+/* HERO */
+.hero {
+  padding: 80px 0 60px;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 20px;
+  background: rgba(0,212,177,0.1); border: 1px solid rgba(0,212,177,0.3);
+  font-size: 11px; font-weight: 600; color: var(--teal);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800; line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+.hero h1 .accent { color: var(--teal); }
+.hero p {
+  font-size: 17px; color: var(--muted); max-width: 560px;
+  margin: 0 auto 36px; line-height: 1.7;
+}
+.hero-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: all 0.2s; display: inline-flex;
+  align-items: center; gap: 7px; font-family: 'DM Sans', sans-serif;
+}
+.btn-primary { background: var(--teal); color: #070E1C; border: 1px solid var(--teal); }
+.btn-primary:hover { background: var(--teal2); transform: scale(1.03); }
+.btn-outline { background: transparent; color: var(--cream); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: rgba(0,212,177,0.5); color: var(--teal); }
+
+/* PHASE CARDS */
+.section { padding: 60px 0; }
+.section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--teal); margin-bottom: 10px;
+}
+.section h2 {
+  font-family: 'Sora', sans-serif; font-size: 30px; font-weight: 700;
+  margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.section > .container > p { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+
+.phases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.phase-card {
+  background: rgba(11,22,40,0.8);
+  border: 1px solid rgba(0,212,177,0.12);
+  border-radius: 16px; padding: 24px;
+  transition: all 0.25s; position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.phase-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--teal), transparent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.phase-card:hover { border-color: var(--border); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+.phase-card:hover::before { opacity: 1; }
+.phase-num {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--teal); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.phase-badge {
+  font-size: 9px; padding: 2px 6px; border-radius: 3px;
+  background: rgba(0,212,177,0.15); border: 1px solid rgba(0,212,177,0.3);
+}
+.phase-badge.p2 { background: rgba(245,166,35,0.15); border-color: rgba(245,166,35,0.3); color: var(--amber); }
+.phase-badge.p3 { background: rgba(124,110,240,0.15); border-color: rgba(124,110,240,0.3); color: #b5acff; }
+.phase-card h3 { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.phase-card p { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 18px; flex: 1; }
+.feature-list { list-style: none; margin-bottom: 22px; display: flex; flex-direction: column; gap: 7px; }
+.feature-list li {
+  font-size: 12.5px; color: rgba(237,232,216,0.7);
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.45;
+}
+.feature-list li::before { content: '✓'; color: var(--teal); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.phase-link {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 16px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: all 0.2s; border: 1px solid;
+}
+.phase-link.p1 { background: rgba(0,212,177,0.12); border-color: rgba(0,212,177,0.35); color: var(--teal); }
+.phase-link.p1:hover { background: rgba(0,212,177,0.22); }
+.phase-link.p2 { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: var(--amber); }
+.phase-link.p2:hover { background: rgba(245,166,35,0.18); }
+.phase-link.p3 { background: rgba(124,110,240,0.12); border-color: rgba(124,110,240,0.35); color: #b5acff; }
+.phase-link.p3:hover { background: rgba(124,110,240,0.2); }
+
+/* TECH STACK */
+.tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 28px; }
+.tech-card {
+  background: rgba(11,22,40,0.6); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; display: flex; align-items: flex-start; gap: 12px;
+}
+.tech-icon { font-size: 24px; flex-shrink: 0; }
+.tech-name { font-size: 13px; font-weight: 600; color: var(--cream); margin-bottom: 3px; }
+.tech-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid rgba(0,212,177,0.1); margin: 10px 0; }
+
+/* FOOTER */
+footer {
+  padding: 32px 24px; border-top: 1px solid var(--border);
+  text-align: center; font-size: 12px; color: var(--muted);
+}
+footer a { color: var(--teal); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-mark">🤟</div>
+    SignBridge
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#phases">Phases</a>
+    <a class="nav-link" href="#tech">Tech Stack</a>
+    <a class="nav-link" href="https://github.com" target="_blank">GitHub</a>
+    <a class="nav-link cta" href="phases/phase3.html">Launch App →</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="var(--teal)"/></svg>
+      Open Source · Browser-Based · No Backend Required
+    </div>
+    <h1>Real-Time <span class="accent">Sign Language</span><br>Communication</h1>
+    <p>A bidirectional communication web app bridging deaf/mute and hearing individuals using camera-based ASL detection, NLP grammar correction, and animated sign playback.</p>
+    <div class="hero-btns">
+      <a class="btn btn-primary" href="phases/phase3.html">🤟 Launch Phase 3</a>
+      <a class="btn btn-outline" href="https://github.com" target="_blank">⭐ Star on GitHub</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="phases">
+    <div class="section-label">Development Phases</div>
+    <h2>Three Phases of SignBridge</h2>
+    <p>Each phase builds on the last — from prototype to a full-featured communication platform.</p>
+
+    <div class="phases-grid">
+      <!-- Phase 1 -->
+      <div class="phase-card">
+        <div class="phase-num">Phase 1 <span class="phase-badge">Foundation</span></div>
+        <h3>📷 Core Prototype</h3>
+        <p>Camera feed, MediaPipe hand skeleton overlay, ASL fingerspelling detection, and a chat shell with basic text/speech modes.</p>
+        <ul class="feature-list">
+          <li>Live webcam with hand skeleton overlay</li>
+          <li>MediaPipe Hands landmark detection</li>
+          <li>ASL A–Z fingerspelling classifier</li>
+          <li>Letter buffer → send as message</li>
+          <li>Speech-to-text (Web Speech API)</li>
+          <li>Text-to-speech for signed messages</li>
+          <li>Chat UI with sent/received bubbles</li>
+        </ul>
+        <a class="phase-link p1" href="phases/phase1.html">Open Phase 1 →</a>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-card">
+        <div class="phase-num">Phase 2 <span class="phase-badge p2">Expanded</span></div>
+        <h3>🔮 Full Feature Set</h3>
+        <p>200+ word ASL dictionary, SVG hand avatar animations, word prediction, hold-time guidance, and a persistent translated message log.</p>
+        <ul class="feature-list">
+          <li>200+ word ASL sign dictionary</li>
+          <li>Word prediction strip (up to 6 chips)</li>
+          <li>Hold-time guidance bar with color steps</li>
+          <li>SVG hand avatar animated word-by-word</li>
+          <li>Translated message log on left panel</li>
+          <li>Sign reference card (letter + handshape)</li>
+          <li>Quick-sign chips for common phrases</li>
+          <li>Full settings drawer (hold, TTS, speed)</li>
+        </ul>
+        <a class="phase-link p2" href="phases/phase2.html">Open Phase 2 →</a>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-card">
+        <div class="phase-num">Phase 3 <span class="phase-badge p3">Advanced</span></div>
+        <h3>🚀 Production Ready</h3>
+        <p>50/50 split layout, NLP grammar correction, emotion detection, sign training mode with scoring, and room-sharing UI.</p>
+        <ul class="feature-list">
+          <li>True 50/50 split panel layout</li>
+          <li>NLP grammar correction (ASL→English)</li>
+          <li>Emotion detection from facial expression</li>
+          <li>Sign Training Mode with live scoring</li>
+          <li>Room sharing (WebRTC-ready UI)</li>
+          <li>Enhanced 3D-style hand avatar renderer</li>
+          <li>Tab bar (Chat / Training / Stats)</li>
+          <li>Session accuracy tracking per letter</li>
+        </ul>
+        <a class="phase-link p3" href="phases/phase3.html">Open Phase 3 →</a>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="tech">
+    <div class="section-label">Technology</div>
+    <h2>Built entirely in the browser</h2>
+    <p>No backend, no server, no build step. A single HTML file per phase — open and run.</p>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🖐</div><div><div class="tech-name">MediaPipe Hands</div><div class="tech-desc">21-point 3D hand landmark detection at ~30fps via CDN</div></div></div>
+      <div class="tech-card"><div class="tech-icon">🧠</div><div><div class="tech-name">Gesture Classifier</div><div class="tech-desc">Custom landmark-based ASL classifier — no TensorFlow required</div></div></div>
+      <div class="tech-card"><div class="tech-icon">🎤</div><div><div class="tech-name">Web Speech API</div><div class="tech-desc">Browser-native speech-to-text and text-to-speech</div></div></div>
+      <div class="tech-card"><div class="tech-icon">🎨</div><div><div class="tech-name">Canvas API</div><div class="tech-desc">Hand skeleton overlay and animated SVG-style avatar renderer</div></div></div>
+      <div class="tech-card"><div class="tech-icon">📝</div><div><div class="tech-name">NLP Engine</div><div class="tech-desc">Rule-based ASL-to-English grammar reordering (Phase 3)</div></div></div>
+      <div class="tech-card"><div class="tech-icon">🔗</div><div><div class="tech-name">WebRTC (Phase 4)</div><div class="tech-desc">P2P room sharing UI built, STUN/TURN integration next</div></div></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-label">Quick Start</div>
+    <h2>Get Running in 30 Seconds</h2>
+    <p style="margin-bottom:20px">No npm, no build tools, no dependencies to install.</p>
+    <div style="background:rgba(11,22,40,0.8);border:1px solid var(--border);border-radius:12px;padding:20px;font-family:monospace;font-size:13px;line-height:2;color:#7af4e0">
+      <div style="color:var(--muted);margin-bottom:8px"># Clone the repository</div>
+      <div>git clone https://github.com/your-username/signbridge.git</div>
+      <div>cd signbridge</div>
+      <div style="color:var(--muted);margin:8px 0"># Open directly in your browser (no server needed)</div>
+      <div>open phases/phase3.html</div>
+      <div style="color:var(--muted);margin-top:8px"># Or serve locally for camera access</div>
+      <div>npx serve .</div>
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7">
+      ⚠️ <strong style="color:var(--cream)">Camera Note:</strong> Browsers require HTTPS or localhost for camera access. Use <code style="background:rgba(0,212,177,0.1);padding:1px 5px;border-radius:3px;color:var(--teal)">npx serve .</code> or deploy to any static host (GitHub Pages, Netlify, Vercel).
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="margin-bottom:8px">
+    Built with 🤟 using MediaPipe · Web Speech API · Canvas API · Vanilla JS
+  </div>
+  <div>
+    <a href="phases/phase3.html">Launch App</a> ·
+    <a href="https://github.com" target="_blank">GitHub</a> ·
+    <a href="https://mediapipe.dev" target="_blank">MediaPipe Docs</a>
+  </div>
+</footer>
+
+</body>
+</html>
